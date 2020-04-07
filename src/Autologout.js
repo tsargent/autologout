@@ -20,7 +20,9 @@ class AutoLogout extends React.Component {
   }
 
   componentDidMount() {
-    // window.addEventListener('storage', this.handleStorageChange);
+    // TODO: This is an issue in IE, but we need this to communicate between tabs. ???
+    // https://stackoverflow.com/questions/18265556/why-does-internet-explorer-fire-the-window-storage-event-on-the-window-that-st
+    window.addEventListener('storage', this.handleStorageChange);
     this.addEventListeners();
   }
 
@@ -48,7 +50,8 @@ class AutoLogout extends React.Component {
     });
   }
 
-  handleStorageChange() {
+  handleStorageChange(e) {
+    console.log(e);
     const storageState = this.getLocalStorage();
     this.setState(storageState);
   }
