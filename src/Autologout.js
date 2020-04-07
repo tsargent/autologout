@@ -20,7 +20,7 @@ class AutoLogout extends React.Component {
   }
 
   componentDidMount() {
-    window.addEventListener('storage', this.handleStorageChange);
+    // window.addEventListener('storage', this.handleStorageChange);
     this.addEventListeners();
   }
 
