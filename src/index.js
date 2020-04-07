@@ -19,6 +19,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Router, Link, useNavigate } from "@reach/router"
 import App from './App';
 import AutoLogout from "./Autologout";
 import "bootstrap/dist/css/bootstrap.css";
@@ -29,7 +30,7 @@ const nowSeconds = () => Math.floor(Date.now() / 1000);
 const setExpiration = () => new Promise((resolve) => {
   setTimeout(() => {
     const now = nowSeconds();
-    const interval = 30;
+    const interval = 20;
     const payload = {
       created_at: now,
       expires_at: now + interval,
@@ -49,7 +50,7 @@ const getExpiration = () => new Promise((resolve) => {
   }, 200)
 })
 
-const Notifier = ({expiration, isActive, onClickContinue}) => {
+const Notifier = ({ onClickContinue }) => {
   return (
     <div className="modal" tabIndex="-1" role="dialog" style={{display: 'block'}}>
       <div className="modal-dialog" role="document">
@@ -62,7 +63,7 @@ const Notifier = ({expiration, isActive, onClickContinue}) => {
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-primary" onClick={onClickContinue}>Continue</button>
-            <button type="button" className="btn btn-secondary" data-dismiss="modal">Log out</button>
+            <Link to="sign-in" className="btn btn-secondary">Log out</Link>
           </div>
         </div>
       </div>
@@ -76,9 +77,18 @@ const FormattedTime = ({utcSeconds}) => {
   return d.toTimeString();
 }
 
-ReactDOM.render(
-  <React.StrictMode>
-    <AutoLogout setExpiration={setExpiration} getExpiration={getExpiration}>
+const SignIn = () => (
+  <>
+    <h2>Sign in</h2>
+    <Link to="/" className="btn btn-primary">Sign in</Link>
+  </>
+)
+
+const Main = () => {
+  const navigate = useNavigate();
+  const logout = () => navigate("sign-in");
+  return (
+    <AutoLogout setExpiration={setExpiration} getExpiration={getExpiration} onTimeout={logout}>
       {({expiration, isActive, showNotifier, onClickContinue}) => (
         <>
           <App />
@@ -92,6 +102,15 @@ ReactDOM.render(
         </>
       )}
     </AutoLogout>
+  )
+}
+
+ReactDOM.render(
+  <React.StrictMode>
+    <Router>
+      <Main path="/" />
+      <SignIn path="sign-in" />
+    </Router>
   </React.StrictMode>,
   document.getElementById('root')
 );

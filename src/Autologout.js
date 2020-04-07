@@ -67,14 +67,16 @@ class AutoLogout extends React.Component {
   getExpiration() {
     this.props.getExpiration().then(data => {
       console.log("getExpiration data:", data)
+      if(data <= 0) {
+        console.log('SHOULD LOG OUT')
+        this.props.onTimeout();
+      }
     })
   }
 
   pollExpiration() {
     if(!this.state.isActive) {
-      this.pollInterval = setInterval(() => this.getExpiration(), 2000);
-    } else {
-      clearInterval(this.pollInterval);
+      this.pollInterval = setInterval(() => this.getExpiration(), 1000);
     }
   }
 
@@ -145,7 +147,7 @@ AutoLogout.defaultProps = {
     'mousemove',
   ],
   localStorageKey: 'inactivity',
-  notifierTime: 25,
+  notifierTime: 10,
 }
 
 AutoLogout.propTypes = {
