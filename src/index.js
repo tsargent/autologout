@@ -51,14 +51,21 @@ const getExpiration = () => new Promise((resolve) => {
 
 const Notifier = ({expiration, isActive, onClickContinue}) => {
   return (
-    <div className="bg-light p-4 m-4">
-      <p>
-        Notifier container<br/>
-        {expiration}<br/>
-        {isActive ? 'true' : 'false'}
-      </p>
-      <button className="btn btn-secondary mr-1" onClick={onClickContinue}>Continue</button> 
-      <button className="btn btn-primary ml-1">Log off</button> 
+    <div className="modal" tabIndex="-1" role="dialog" style={{display: 'block'}}>
+      <div className="modal-dialog" role="document">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">Some words</h5>
+          </div>
+          <div className="modal-body">
+            <p>Some more words.</p>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-primary" onClick={onClickContinue}>Continue</button>
+            <button type="button" className="btn btn-secondary" data-dismiss="modal">Log out</button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
