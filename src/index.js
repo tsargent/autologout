@@ -22,6 +22,7 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import AutoLogout from "./Autologout";
 import "bootstrap/dist/css/bootstrap.css";
+import 'promise-polyfill/src/polyfill';
 
 const nowSeconds = () => Math.floor(Date.now() / 1000);
 

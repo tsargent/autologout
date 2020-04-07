@@ -20,8 +20,6 @@ class AutoLogout extends React.Component {
   }
 
   componentDidMount() {
-    // this.getExpiration();
-    // this.pollExpiration();
     window.addEventListener('storage', this.handleStorageChange);
     this.addEventListeners();
   }
@@ -51,7 +49,6 @@ class AutoLogout extends React.Component {
   }
 
   handleStorageChange() {
-    console.log('STORAGE CHANGE')
     const storageState = this.getLocalStorage();
     this.setState(storageState);
   }
@@ -123,7 +120,6 @@ class AutoLogout extends React.Component {
   }
 
   onClickContinue() {
-    console.log('click continue!!!!');
     this.activityStart();
   }
 
