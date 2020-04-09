@@ -37,19 +37,20 @@ class AutoLogout extends React.Component {
   }
 
   addEventListeners() {
-    this.props.events.forEach(e => {
-      document.addEventListener(e, this.activityStart);
-      document.addEventListener(e, this.activityPause);
+    this.props.events.forEach(event => {
+      document.addEventListener(event, this.activityStart);
+      document.addEventListener(event, this.activityPause);
     });
   }
 
   removeEventListeners() {
-    this.props.events.forEach(e => {
-      document.removeEventListener(e, this.activityStart);
-      document.removeEventListener(e, this.activityPause);
+    this.props.events.forEach(event => {
+      document.removeEventListener(event, this.activityStart);
+      document.removeEventListener(event, this.activityPause);
     });
   }
 
+  // this will only fire in non-active tabs
   handleStorageChange(e) {
     console.log(e);
     const storageState = this.getLocalStorage();
@@ -65,16 +66,15 @@ class AutoLogout extends React.Component {
   }
 
   getExpiration() {
-    this.props.getExpiration().then(data => {
-      console.log("getExpiration data:", data)
-      if(data <= 0) {
-        console.log('SHOULD LOG OUT')
-        this.props.onTimeout();
-      }
+    this.props.getExpiration().then((data) => {
+      console.log("getExpiration data:", data);
+      this.setState({
+        expirationTimer: data.expires_in_seconds,
+      })
     })
   }
 
-  pollExpiration() {
+  pollExpiration() {  
     if(!this.state.isActive) {
       this.pollInterval = setInterval(() => this.getExpiration(), 1000);
     }
@@ -87,9 +87,12 @@ class AutoLogout extends React.Component {
 
     this.pollExpiration();
 
-    this.props.setExpiration().then(({ created_at, expires_in_seconds }) => {
-      const expiration = created_at + expires_in_seconds;
-      this.setStateAndStorage({ expiration });
+    this.props.setExpiration().then(({ created_at, expires_at, expires_in_seconds }) => {
+      this.setStateAndStorage({
+        expirationTimer: expires_in_seconds,
+        createdAt: created_at,
+        expiresAt: expires_at,
+      });
 
       const now = Math.floor(Date.now() / 1000);
 
@@ -129,12 +132,13 @@ class AutoLogout extends React.Component {
   }
 
   render() {
-    const { isActive, expiration, showNotifier } = this.state;
+    const { isActive, expiresAt, showNotifier } = this.state;
+    const onClickContinue = this.onClickContinue;
     return this.props.children({
-        expiration,
+        expiresAt,
         isActive,
         showNotifier,
-        onClickContinue: this.onClickContinue,
+        onClickContinue,
       })
   }
 }
