@@ -94,15 +94,14 @@ const Main = () => {
   return (
     <div>
       <AutoLogout2 setExpiration={setExpiration} getExpiration={getExpiration} onTimeout={logout}>
-        {({expiresAt, isActive, showNotifier, onClickContinue}) => (
+        {(args) => (
           <>
             <pre className="bg-dark text-white p-4 m-4">
-              User is active: {isActive ? 'true' : 'false'}<br />
-              Expires at: {expiresAt && <FormattedTime utcSeconds={expiresAt} />}
+              {JSON.stringify(args, null,  2)}
             </pre>
-            {showNotifier && (
+            {/* {showNotifier && (
               <Notifier expiresAt={expiresAt} isActive={isActive} onClickContinue={onClickContinue}/>
-            )}
+            )} */}
           </>
         )}
       </AutoLogout2>

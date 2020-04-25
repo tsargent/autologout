@@ -2,7 +2,7 @@ import React from 'react';
 import debounce from 'lodash.debounce'
 import utcSecondsToString from './utcSecondsToString';
 
-// https://www.epochconverter.com/
+// https://www.epochconverter.com/'
 
 class AutoLogout2 extends React.Component {
 
@@ -15,27 +15,38 @@ class AutoLogout2 extends React.Component {
       'scroll',
     ];
     this.resetTimers = this.resetTimers.bind(this);
-    this.logDebounceValue = 5000;
-    this.logInactivity = debounce(this.logInactivity, this.logDebounceValue);
+    this.logDebounceValue = 5 * 1000;
+    this.warnValue = 10 * 1000;
+    this.logoutValue = 15 * 1000; 
+    this.logInactivity = debounce(this.logInactivity.bind(this), this.logDebounceValue);
 
     this.events.forEach((event) => {
       window.addEventListener(event, this.resetTimers);
+      window.addEventListener(event, this.logInactivity);
     });
 
+    // log immediately. Because it is debounced, it will not fire if the user begins interacting
+    // within the debounce value time.
+    this.logInactivity();
+
+    // start timers immediately
     this.setTimers();
   }
 
   logInactivity() {
     const now = Math.floor(Date.now() / 1000);
     const adjusted = now - (this.logDebounceValue / 1000);
-    console.log(utcSecondsToString(adjusted));
-    console.log('log inactivity:', adjusted);
+    const adjustedString = utcSecondsToString(adjusted);
+    this.setState({ 
+      lastActiveSeconds: adjusted,
+      lastActiveString: adjustedString,
+    });
+    console.log('log inactivity:', { adjusted, adjustedString });
   }
 
   setTimers() {
-    this.logInactivity();
-    this.warningTimeout = setTimeout(this.warn, 5000);
-    this.logoutTimeout = setTimeout(this.logout, 8000);
+    this.warningTimeout = setTimeout(this.warn, this.warnValue);
+    this.logoutTimeout = setTimeout(this.logout, this.logoutValue);
   }
 
   clearTimers() {
@@ -57,9 +68,11 @@ class AutoLogout2 extends React.Component {
   }
 
   render() {
-    return this.props.children({});
+    const state =  this.state;
+    return this.props.children({
+      ...state,
+    });
   }
 }
-
 
 export default AutoLogout2;
