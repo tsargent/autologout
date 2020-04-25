@@ -92,20 +92,22 @@ const Main = () => {
   const navigate = useNavigate();
   const logout = () => navigate("sign-in");
   return (
-    <AutoLogout setExpiration={setExpiration} getExpiration={getExpiration} onTimeout={logout}>
-      {({expiresAt, isActive, showNotifier, onClickContinue}) => (
-        <>
-          <App />
-          <pre className="bg-dark text-white p-4 m-4">
-            User is active: {isActive ? 'true' : 'false'}<br />
-            Expires at: {expiresAt && <FormattedTime utcSeconds={expiresAt} />}
-          </pre>
-          {showNotifier && (
-            <Notifier expiresAt={expiresAt} isActive={isActive} onClickContinue={onClickContinue}/>
-          )}
-        </>
-      )}
-    </AutoLogout>
+    <div>
+      <AutoLogout setExpiration={setExpiration} getExpiration={getExpiration} onTimeout={logout}>
+        {({expiresAt, isActive, showNotifier, onClickContinue}) => (
+          <>
+            <pre className="bg-dark text-white p-4 m-4">
+              User is active: {isActive ? 'true' : 'false'}<br />
+              Expires at: {expiresAt && <FormattedTime utcSeconds={expiresAt} />}
+            </pre>
+            {showNotifier && (
+              <Notifier expiresAt={expiresAt} isActive={isActive} onClickContinue={onClickContinue}/>
+            )}
+          </>
+        )}
+      </AutoLogout>
+      <App />   
+    </div>
   )
 }
 
