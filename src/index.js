@@ -21,7 +21,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router, Link, useNavigate } from "@reach/router"
 import App from './App';
-import AutoLogout from "./Autologout";
+import AutoLogout2 from "./Autologout2";
 import "bootstrap/dist/css/bootstrap.css";
 import 'promise-polyfill/src/polyfill';
 
@@ -93,7 +93,7 @@ const Main = () => {
   const logout = () => navigate("sign-in");
   return (
     <div>
-      <AutoLogout setExpiration={setExpiration} getExpiration={getExpiration} onTimeout={logout}>
+      <AutoLogout2 setExpiration={setExpiration} getExpiration={getExpiration} onTimeout={logout}>
         {({expiresAt, isActive, showNotifier, onClickContinue}) => (
           <>
             <pre className="bg-dark text-white p-4 m-4">
@@ -105,18 +105,16 @@ const Main = () => {
             )}
           </>
         )}
-      </AutoLogout>
+      </AutoLogout2>
       <App />   
     </div>
   )
 }
 
 ReactDOM.render(
-  <React.StrictMode>
-    <Router>
-      <Main path="/" />
-      <SignIn path="sign-in" />
-    </Router>
-  </React.StrictMode>,
+  <Router>
+    <Main path="/" />
+    <SignIn path="sign-in" />
+  </Router>,
   document.getElementById('root')
 );
