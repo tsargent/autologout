@@ -17,9 +17,9 @@ import utcSecondsToString from './utcSecondsToString';
 
 /* 15 minutes = 900 seconds */
 
-const logoutValue = 900;
-const warningDifference = 60;
-const debounceValue = 5;
+const logoutValue = 10;
+const warningDifference = 5;
+const debounceValue = 3;
 
 const fakeUpdate = ({
   lastActive,
@@ -72,11 +72,11 @@ class AutoLogout2 extends React.Component {
       logout: false,
     }
 
-    // log immediately. Because it is debounced, it will not fire if the user begins interacting
-    // within the debounce value time.
+    /* log immediately. Because it is debounced, it will not fire if the user begins interacting
+    within the debounce value time. */
     this.logInactivity();
 
-    // start timers immediately
+    /* start timers immediately */
     this.setTimers();
   }
 
