@@ -3,9 +3,23 @@ import PropTypes from 'prop-types';
 import debounce from 'lodash.debounce'
 import utcSecondsToString from './utcSecondsToString';
 
+/* Time values to consider:
+- logoutValue
+  The time in seconds it takes to logout due to inactivity.
+
+- warningDifference
+  The time in seconds during which we see the warning. 
+  It will first appear at logoutValue - warningDifference seconds until logout.
+
+- logDebounceValue
+  The time in seconds we wait to assume the user has become inactive.
+*/
+
 /* 15 minutes = 900 seconds */
+
 const logoutValue = 900;
 const warningDifference = 60;
+const debounceValue = 5;
 
 const fakeUpdate = ({
   lastActive,
@@ -13,7 +27,7 @@ const fakeUpdate = ({
   setTimeout(() => {
     /* Server could tell us how long the cookie should last for.
     15 minutes in this case. Or it could calculate that new expiration time
-    and give us that.  */
+    and give us that. */
     const serverExpirationPeriod = logoutValue;
     const newExpiration =  lastActive + serverExpirationPeriod;
     const newExpirationString = utcSecondsToString(newExpiration);
@@ -34,7 +48,8 @@ class AutoLogout2 extends React.Component {
       'mousemove',
       'scroll',
     ];
-    this.logDebounceValue = 5 * 1000;
+
+    this.logDebounceValue = debounceValue;
 
     // the length of time in seconds from last action to warning
     this.warnValue = logoutValue - warningDifference;
@@ -43,7 +58,7 @@ class AutoLogout2 extends React.Component {
     this.logoutValue = logoutValue;
 
     this.resetTimers = this.resetTimers.bind(this);
-    this.logInactivity = debounce(this.logInactivity.bind(this), this.logDebounceValue);
+    this.logInactivity = debounce(this.logInactivity.bind(this), this.logDebounceValue * 1000);
     this.warn = this.warn.bind(this);
     this.logout = this.logout.bind(this);
 
@@ -71,7 +86,7 @@ class AutoLogout2 extends React.Component {
     const now = Math.floor(Date.now() / 1000);
 
     /* Adjust the above value to get the exact time at which we stopped activity. */
-    const adjusted = now - (this.logDebounceValue / 1000);
+    const adjusted = now - (this.logDebounceValue);
     const adjustedString = utcSecondsToString(adjusted);
 
     /* Tell the server when we stopped, and get a new expiration back. */
@@ -98,7 +113,8 @@ class AutoLogout2 extends React.Component {
   }
 
   resetTimers() {
-    /* Resetting the timers just involves clearing them and starting them again. */
+    /* Resetting the timers just involves clearing them and starting them again. 
+    They never stop without restarting. */
     this.clearTimers();
     this.setTimers();
   }
