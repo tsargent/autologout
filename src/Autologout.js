@@ -28,17 +28,12 @@ class AutoLogout extends React.Component {
       'scroll',
     ];
 
-    this.logDebounceValue = props.logDebounceSeconds;
-
     // the length of time in seconds from last action to warning
     this.warnValue = props.logoutSeconds - props.warningSeconds;
 
-    // the length of time in seconds from last action to logout
-    this.logoutValue = props.logoutSeconds;
-
     this.resetTimers = this.resetTimers.bind(this);
     this.continue = this.continue.bind(this);
-    this.logInactivity = debounce(this.logInactivity.bind(this), this.logDebounceValue * 1000);
+    this.logInactivity = debounce(this.logInactivity.bind(this), props.logDebounceSeconds * 1000);
     this.warn = this.warn.bind(this);
     this.logout = this.logout.bind(this);
 
@@ -66,7 +61,7 @@ class AutoLogout extends React.Component {
     const now = Math.floor(Date.now() / 1000);
 
     /* Adjust the above value to get the exact time at which we stopped activity. */
-    const adjusted = now - (this.logDebounceValue);
+    const adjusted = now - (this.props.logDebounceSeconds);
     const adjustedString = utcSecondsToString(adjusted);
 
     /* Tell the server when we stopped, and get a new expiration back. */
@@ -83,8 +78,9 @@ class AutoLogout extends React.Component {
   setTimers() {
     /* Set two timers for the warning and final logout. These are always running,
     but are continuously being reset then there is activity. */
-    this.warningTimeout = setTimeout(this.warn, this.warnValue * 1000);
-    this.logoutTimeout = setTimeout(this.logout, this.logoutValue * 1000);
+    const { logoutSeconds, warningSeconds } = this.props; 
+    this.warningTimeout = setTimeout(this.warn, (logoutSeconds - warningSeconds) * 1000);
+    this.logoutTimeout = setTimeout(this.logout, logoutSeconds * 1000);
   }
 
   resetTimers() {

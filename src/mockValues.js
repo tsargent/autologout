@@ -1,5 +1,5 @@
 export default {
-  logoutSeconds: 10,
-  logDebounceSeconds: 1,
+  logoutSeconds: 20,
+  logDebounceSeconds: 3,
   warningSeconds: 5,
 };
