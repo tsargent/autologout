@@ -1,164 +1,146 @@
-import React from "react";
+import React from 'react';
 import PropTypes from 'prop-types';
 import debounce from 'lodash.debounce'
+import utcSecondsToString from './utcSecondsToString';
+
+/* Time values to consider:
+- logoutValue
+  The time in seconds it takes to logout due to inactivity.
+
+- warningDifference
+  The time in seconds during which we see the warning. 
+  It will first appear at logoutValue - warningDifference seconds until logout.
+
+- logDebounceValue
+  The time in seconds we wait to assume the user has become inactive.
+*/
+
+/* 15 minutes = 900 seconds */
+
+const logoutValue = 10;
+const warningDifference = 5;
+const debounceValue = 3;
+
+const fakeUpdate = ({
+  lastActive,
+}) => new Promise((resolve) => {
+  setTimeout(() => {
+    /* Server could tell us how long the cookie should last for.
+    15 minutes in this case. Or it could calculate that new expiration time
+    and give us that. */
+    const serverExpirationPeriod = logoutValue;
+    const newExpiration =  lastActive + serverExpirationPeriod;
+    const newExpirationString = utcSecondsToString(newExpiration);
+    resolve({
+      newExpiration,
+      newExpirationString,
+    });
+  }, 20);
+});
 
 class AutoLogout extends React.Component {
 
   constructor(props) {
     super(props);
-    this.notifierTimeout = null;
-    this.pollInterval = null;
-    this.handleStorageChange = this.handleStorageChange.bind(this);
-    this.activityStart = this.activityStart.bind(this);
-    this.activityPause = debounce(this.activityPause.bind(this), this.props.activityDelay * 1000);
-    this.onClickContinue = this.onClickContinue.bind(this);
+    this.events = [
+      'click',
+      'keydown',
+      'mousemove',
+      'scroll',
+    ];
+
+    this.logDebounceValue = debounceValue;
+
+    // the length of time in seconds from last action to warning
+    this.warnValue = logoutValue - warningDifference;
+
+    // the length of time in seconds from last action to logout
+    this.logoutValue = logoutValue;
+
+    this.resetTimers = this.resetTimers.bind(this);
+    this.logInactivity = debounce(this.logInactivity.bind(this), this.logDebounceValue * 1000);
+    this.warn = this.warn.bind(this);
+    this.logout = this.logout.bind(this);
+
+    this.events.forEach((event) => {
+      window.addEventListener(event, this.resetTimers);
+      window.addEventListener(event, this.logInactivity);
+    });
+
     this.state = {
-      isActive: false,
-      expiration: null,
-      showNotifier: false,
-    }
-  }
-
-  componentDidMount() {
-    // TODO: This is an issue in IE, but we need this to communicate between tabs. ???
-    // https://stackoverflow.com/questions/18265556/why-does-internet-explorer-fire-the-window-storage-event-on-the-window-that-st
-    window.addEventListener('storage', this.handleStorageChange);
-    this.addEventListeners();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if(prevState.showNotifier && !this.state.showNotifier) {
-      this.addEventListeners();
+      warn: false,
+      logout: false,
     }
 
-    if(!prevState.showNotifier && this.state.showNotifier) {
-      this.removeEventListeners();
-    }
+    /* log immediately. Because it is debounced, it will not fire if the user begins interacting
+    within the debounce value time. */
+    this.logInactivity();
+
+    /* start timers immediately */
+    this.setTimers();
   }
 
-  addEventListeners() {
-    this.props.events.forEach(event => {
-      document.addEventListener(event, this.activityStart);
-      document.addEventListener(event, this.activityPause);
+  logInactivity() {
+    /* Get the current time in UTC seconds. This is [logDebounceValue] seconds after 
+    we stopped activity. */
+    const now = Math.floor(Date.now() / 1000);
+
+    /* Adjust the above value to get the exact time at which we stopped activity. */
+    const adjusted = now - (this.logDebounceValue);
+    const adjustedString = utcSecondsToString(adjusted);
+
+    /* Tell the server when we stopped, and get a new expiration back. */
+    this.props.updateActivity({
+      lastActive: adjusted,
+    }).then((data) => this.setState(data));
+
+    this.setState({ 
+      lastActive: adjusted,
+      lastActiveString: adjustedString,
     });
   }
 
-  removeEventListeners() {
-    this.props.events.forEach(event => {
-      document.removeEventListener(event, this.activityStart);
-      document.removeEventListener(event, this.activityPause);
-    });
+  setTimers() {
+    /* Set two timers for the warning and final logout. These are always running,
+    but are continuously being reset then there is activity. */
+    this.warningTimeout = setTimeout(this.warn, this.warnValue * 1000);
+    this.logoutTimeout = setTimeout(this.logout, this.logoutValue * 1000);
   }
 
-  // this will only fire in non-active tabs
-  handleStorageChange(e) {
-    console.log(e);
-    const storageState = this.getLocalStorage();
-    this.setState(storageState);
+  clearTimers() {
+    clearTimeout(this.warningTimeout);
+    clearTimeout(this.logoutTimeout);
   }
 
-  activityStart() {
-    clearInterval(this.pollInterval);
-    clearTimeout(this.notifierTimeout);
-    if(!this.state.isActive) {
-      this.setStateAndStorage({ isActive: true, expiration: null, showNotifier: false });
-    }
+  resetTimers() {
+    /* Resetting the timers just involves clearing them and starting them again. 
+    They never stop without restarting. */
+    this.clearTimers();
+    this.setTimers();
   }
 
-  getExpiration() {
-    this.props.getExpiration().then((data) => {
-      console.log("getExpiration data:", data);
-      this.setState({
-        expirationTimer: data.expires_in_seconds,
-      })
-    })
+  warn() {
+    this.setState({ warn: true });
   }
 
-  pollExpiration() {  
-    if(!this.state.isActive) {
-      this.pollInterval = setInterval(() => this.getExpiration(), 1000);
-    }
-  }
-
-  activityPause() {
-    clearTimeout(this.notifierTimeout);
-    clearInterval(this.pollInterval);
-    this.setStateAndStorage({ isActive: false });
-
-    this.pollExpiration();
-
-    this.props.setExpiration().then(({ created_at, expires_at, expires_in_seconds }) => {
-      this.setStateAndStorage({
-        expirationTimer: expires_in_seconds,
-        createdAt: created_at,
-        expiresAt: expires_at,
-      });
-
-      const now = Math.floor(Date.now() / 1000);
-
-      const notifierTimer = (expires_in_seconds - this.props.notifierTime) * 1000
-      
-      console.log('now', now);
-      console.log('created_at', created_at);
-      console.log('notifierTimer', notifierTimer);
-
-      this.notifierTimeout = setTimeout(() => {
-        this.setStateAndStorage({ showNotifier: true })
-      }, notifierTimer);
-    });
-  }
-
-  setLocalStorage(state) {
-    if(window.localStorage) {
-      const { localStorageKey } = this.props;
-      const storage = this.getLocalStorage();
-      localStorage.setItem(localStorageKey, JSON.stringify({...storage, ...state}));
-    }
-  }
-
-  getLocalStorage() {
-    const { localStorageKey } = this.props;
-    if(window.localStorage && window.localStorage.getItem(localStorageKey)) {
-      return JSON.parse(localStorage.getItem(localStorageKey));
-    }
-  }
-
-  setStateAndStorage(data) {
-    this.setState(data, this.setLocalStorage(data));
-  }
-
-  onClickContinue() {
-    this.activityStart();
+  logout() {
+    this.setState({ logout: true });
   }
 
   render() {
-    const { isActive, expiresAt, showNotifier } = this.state;
-    const onClickContinue = this.onClickContinue;
+    const state =  this.state;
     return this.props.children({
-        expiresAt,
-        isActive,
-        showNotifier,
-        onClickContinue,
-      })
+      ...state,
+    });
   }
 }
 
 AutoLogout.defaultProps = {
-  activityDelay: 3,
-  events: [
-    'click',
-    'keydown',
-    'mousemove',
-  ],
-  localStorageKey: 'inactivity',
-  notifierTime: 10,
-}
+  updateActivity: fakeUpdate,
+};
 
 AutoLogout.propTypes = {
-  activityDelay: PropTypes.number,
-  events: PropTypes.arrayOf(PropTypes.string),
-  localStorageKey: PropTypes.string,
-  notifierTime: PropTypes.number,
-}
+  updateActivity: PropTypes.func,
+};
 
 export default AutoLogout;

@@ -1,5 +1,5 @@
 import React from 'react';
-import Autologout from './Autologout2';
+import Autologout from './Autologout';
 import { render } from 'enzyme';
 
 describe('Autologout', () => {
