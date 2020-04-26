@@ -54,26 +54,26 @@ const getExpiration = () => new Promise((resolve) => {
   }, 200)
 })
 
-// const Notifier = ({ onClickContinue }) => {
-//   return (
-//     <div className="modal" tabIndex="-1" role="dialog" style={{display: 'block'}}>
-//       <div className="modal-dialog" role="document">
-//         <div className="modal-content">
-//           <div className="modal-header">
-//             <h5 className="modal-title">Some words</h5>
-//           </div>
-//           <div className="modal-body">
-//             <p>Some more words.</p>
-//           </div>
-//           <div className="modal-footer">
-//             <button type="button" className="btn btn-primary" onClick={onClickContinue}>Continue</button>
-//             <Link to="sign-in" className="btn btn-secondary">Log out</Link>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
+const Notifier = ({ onClickContinue }) => {
+  return (
+    <div className="modal" tabIndex="-1" role="dialog" style={{display: 'block'}}>
+      <div className="modal-dialog" role="document">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">Some words</h5>
+          </div>
+          <div className="modal-body">
+            <p>Some more words.</p>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-primary" onClick={onClickContinue}>Continue</button>
+            <Link to="sign-in" className="btn btn-secondary">Log out</Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const SignIn = () => (
   <>
@@ -93,9 +93,9 @@ const Main = () => {
             <pre className="bg-dark text-white p-4 m-4">
               {JSON.stringify(args, null,  2)}
             </pre>
-            {/* {showNotifier && (
-              <Notifier expiresAt={expiresAt} isActive={isActive} onClickContinue={onClickContinue}/>
-            )} */}
+            {args.warn && (
+              <Notifier onClickContinue={() => console.log('continue')}/>
+            )}
           </>
         )}
       </AutoLogout2>
