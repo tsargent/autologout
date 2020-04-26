@@ -54,32 +54,26 @@ const getExpiration = () => new Promise((resolve) => {
   }, 200)
 })
 
-const Notifier = ({ onClickContinue }) => {
-  return (
-    <div className="modal" tabIndex="-1" role="dialog" style={{display: 'block'}}>
-      <div className="modal-dialog" role="document">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title">Some words</h5>
-          </div>
-          <div className="modal-body">
-            <p>Some more words.</p>
-          </div>
-          <div className="modal-footer">
-            <button type="button" className="btn btn-primary" onClick={onClickContinue}>Continue</button>
-            <Link to="sign-in" className="btn btn-secondary">Log out</Link>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const FormattedTime = ({utcSeconds}) => {
-  const d = new Date(0);
-  d.setUTCSeconds(utcSeconds);
-  return d.toTimeString();
-}
+// const Notifier = ({ onClickContinue }) => {
+//   return (
+//     <div className="modal" tabIndex="-1" role="dialog" style={{display: 'block'}}>
+//       <div className="modal-dialog" role="document">
+//         <div className="modal-content">
+//           <div className="modal-header">
+//             <h5 className="modal-title">Some words</h5>
+//           </div>
+//           <div className="modal-body">
+//             <p>Some more words.</p>
+//           </div>
+//           <div className="modal-footer">
+//             <button type="button" className="btn btn-primary" onClick={onClickContinue}>Continue</button>
+//             <Link to="sign-in" className="btn btn-secondary">Log out</Link>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   )
+// }
 
 const SignIn = () => (
   <>

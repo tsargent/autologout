@@ -12,9 +12,6 @@ function App() {
       <div className="container">
         <div className="row">
           <div className="col">
-            <p>
-              <a target="_blank" href="/">Open new tab</a> to show synchronization.
-            </p>
             <form>
               <div className="form-group">
                 <label htmlFor="input1">Input 1</label>
