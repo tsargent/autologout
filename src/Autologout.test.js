@@ -1,13 +1,17 @@
 import React from 'react';
 import Autologout from './Autologout';
-import { render } from 'enzyme';
+import { mount } from 'enzyme';
 
 describe('Autologout', () => {
   const props = {
-    children: jest.fn(() => () => ({})),
+    children: jest.fn(() => (<div />)),
   };
 
+  beforeEach(() => {
+    global.addEventListener = jest.fn();
+  });
+
   it('renders', () => {
-    render(<Autologout {...props} />);
+    mount(<Autologout {...props} />);
   });
 });
