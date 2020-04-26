@@ -58,6 +58,7 @@ class AutoLogout extends React.Component {
     this.logoutValue = logoutValue;
 
     this.resetTimers = this.resetTimers.bind(this);
+    this.continue = this.continue.bind(this);
     this.logInactivity = debounce(this.logInactivity.bind(this), this.logDebounceValue * 1000);
     this.warn = this.warn.bind(this);
     this.logout = this.logout.bind(this);
@@ -110,9 +111,14 @@ class AutoLogout extends React.Component {
   resetTimers() {
     /* Resetting the timers just involves clearing them and starting them again. 
     They never stop without restarting. */
+    if (this.state.warn) return false;
     clearTimeout(this.warningTimeout);
     clearTimeout(this.logoutTimeout);
     this.setTimers();
+  }
+
+  continue() {
+    this.setState({ warn: false }, this.resetTimers);
   }
 
   warn() {
@@ -127,6 +133,7 @@ class AutoLogout extends React.Component {
     const state =  this.state;
     return this.props.children({
       ...state,
+      onClickContinue: this.continue,
     });
   }
 }

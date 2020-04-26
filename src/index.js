@@ -11,11 +11,8 @@ const Notifier = ({ onClickContinue }) => {
     <div className="modal" tabIndex="-1" role="dialog" style={{display: 'block'}}>
       <div className="modal-dialog" role="document">
         <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title">Some words</h5>
-          </div>
           <div className="modal-body">
-            <p>Some more words.</p>
+            <p>You will be logged out soon due to inactivity.</p>
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-primary" onClick={onClickContinue}>Continue</button>
@@ -37,7 +34,7 @@ const Main = () => {
               {JSON.stringify(args, null,  2)}
             </pre>
             {args.warn && (
-              <Notifier onClickContinue={() => console.log('continue')}/>
+              <Notifier onClickContinue={args.onClickContinue}/>
             )}
           </>
         )}
