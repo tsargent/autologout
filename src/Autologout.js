@@ -107,15 +107,11 @@ class AutoLogout extends React.Component {
     this.logoutTimeout = setTimeout(this.logout, this.logoutValue * 1000);
   }
 
-  clearTimers() {
-    clearTimeout(this.warningTimeout);
-    clearTimeout(this.logoutTimeout);
-  }
-
   resetTimers() {
     /* Resetting the timers just involves clearing them and starting them again. 
     They never stop without restarting. */
-    this.clearTimers();
+    clearTimeout(this.warningTimeout);
+    clearTimeout(this.logoutTimeout);
     this.setTimers();
   }
 
