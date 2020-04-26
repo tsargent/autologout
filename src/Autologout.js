@@ -17,27 +17,6 @@ import utcSecondsToString from './utcSecondsToString';
 
 /* 15 minutes = 900 seconds */
 
-const logoutValue = 10;
-const warningDifference = 5;
-const debounceValue = 3;
-
-const fakeUpdate = ({
-  lastActive,
-}) => new Promise((resolve) => {
-  setTimeout(() => {
-    /* Server could tell us how long the cookie should last for.
-    15 minutes in this case. Or it could calculate that new expiration time
-    and give us that. */
-    const serverExpirationPeriod = logoutValue;
-    const newExpiration =  lastActive + serverExpirationPeriod;
-    const newExpirationString = utcSecondsToString(newExpiration);
-    resolve({
-      newExpiration,
-      newExpirationString,
-    });
-  }, 20);
-});
-
 class AutoLogout extends React.Component {
 
   constructor(props) {
@@ -49,13 +28,13 @@ class AutoLogout extends React.Component {
       'scroll',
     ];
 
-    this.logDebounceValue = debounceValue;
+    this.logDebounceValue = props.logDebounceSeconds;
 
     // the length of time in seconds from last action to warning
-    this.warnValue = logoutValue - warningDifference;
+    this.warnValue = props.logoutSeconds - props.warningSeconds;
 
     // the length of time in seconds from last action to logout
-    this.logoutValue = logoutValue;
+    this.logoutValue = props.logoutSeconds;
 
     this.resetTimers = this.resetTimers.bind(this);
     this.continue = this.continue.bind(this);
@@ -139,11 +118,16 @@ class AutoLogout extends React.Component {
 }
 
 AutoLogout.defaultProps = {
-  updateActivity: fakeUpdate,
+  logDebounceSeconds: 3, 
+  logoutSeconds: 900,
+  warningSeconds: 60,
 };
 
 AutoLogout.propTypes = {
-  updateActivity: PropTypes.func,
+  logDebounceSeconds: PropTypes.number,
+  logoutSeconds: PropTypes.number,
+  warningSeconds: PropTypes.number,
+  updateActivity: PropTypes.func.isRequired,
 };
 
 export default AutoLogout;

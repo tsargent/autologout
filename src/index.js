@@ -3,8 +3,30 @@ import ReactDOM from 'react-dom';
 import { Router, Link } from "@reach/router"
 import App from './App';
 import AutoLogout from "./Autologout";
+import mockValues from './mockValues';
+import utcSecondsToString from './utcSecondsToString';
+
 import "bootstrap/dist/css/bootstrap.css";
 import 'promise-polyfill/src/polyfill';
+
+
+const fakeUpdate = ({
+  lastActive,
+}) => new Promise((resolve) => {
+  setTimeout(() => {
+    /* Server could tell us how long the cookie should last for.
+    15 minutes in this case. Or it could calculate that new expiration time
+    and give us that. */
+    const serverExpirationPeriod = mockValues.logoutSeconds;
+    const newExpiration =  lastActive + serverExpirationPeriod;
+    const newExpirationString = utcSecondsToString(newExpiration);
+    resolve({
+      newExpiration,
+      newExpirationString,
+    });
+  }, 20);
+});
+
 
 const Notifier = ({ onClickContinue }) => {
   return (
@@ -27,7 +49,12 @@ const Notifier = ({ onClickContinue }) => {
 const Main = () => {
   return (
     <div>
-      <AutoLogout>
+      <AutoLogout 
+        logDebounceSeconds={mockValues.logDebounceSeconds}
+        logoutSeconds={mockValues.logoutSeconds}
+        warningSeconds={mockValues.warningSeconds}
+        updateActivity={fakeUpdate}
+        >
         {(args) => (
           <>
             <pre className="bg-dark text-white p-4 m-4">
